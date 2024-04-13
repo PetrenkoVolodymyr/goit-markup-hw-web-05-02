@@ -2,14 +2,13 @@ import asyncio
 import logging
 import websockets
 import names
+import aiofiles
+from datetime import datetime
 from websockets import WebSocketServerProtocol
 from websockets.exceptions import ConnectionClosedOK
 from courses import main_
 
 logging.basicConfig(level=logging.INFO)
-# py_logger = logging.getLogger(__name__)
-# py_logger.setLevel(logging.INFO)
-# py_handler = logging.FileHandler("Program.log", mode='w')
 
 class Server:
     clients = set()
@@ -42,11 +41,14 @@ class Server:
             if command[0] == 'exchange':
                 try:
                     l = main_(command[1])
+                    q_days = command[1]
                 except:
                     l=main_(1)
+                    q_days = 1
                 x = await l
                 await self.send_to_clients(f"{ws.name}: '{x}'")
-                # py_logger.info(f"Testing the custom logger for module...")
+                async with aiofiles.open('test.txt', mode='a') as handle:
+                    await handle.write(f'EXCHANGE at: {datetime.now()}. User: {ws.name}; Days: {q_days}; \n')
             else:
                 await self.send_to_clients(f"{ws.name}: '{message}'")
 
